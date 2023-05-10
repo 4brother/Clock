@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="FourBrother"/>
+  <title>时钟</title>
+</head>
+<body>
+  <canvas id="clock"></canvas>
+</body>
+<script>
+  (() => {
+    const clock = document.querySelector('#clock');
+    const context = clock.getContext("2d");
+    const render = (date, options) => {
+      // console.log(date);
+      // console.log(options);
+      const { h, m, s } = date;
+      const {
+        size,
+        background,
+      } = options;
+      clock.style = `width: ${size}px; height: ${size}px`;
+      clock.width = size;
+      clock.height = size;
+
+      context.translate(size / 2, size / 2);
+      
+      // 绘制背景
+      context.save();
+      if (background instanceof Image) {
+        context.drawImage(background, 0 - size / 2, 0 - size / 2, size, size)
+      } else {
+        context.fillStyle = background || '#000000';
+        context.fillRect(0 - size / 2, 0 - size / 2, size, size);
+        context.restore();
+      }
+      
+      // 绘制表盘
+      context.save();
+      context.beginPath();
+      const padding = 10;
+      const r = size / 2 - padding;
+      context.arc(0, 0, r, 0, 2 * Math.PI);
+      context.closePath();
+      context.strokeStyle = '#ffffff';
+      context.stroke();
+      for (let i = 0; i < 60; i++) {
+        const x = Math.sin(Math.PI * (i * 6) / 180) * r;
+        const y = -Math.cos(Math.PI * (i * 6) / 180) * r;
+        // 绘制刻度线
+        const mLen = size * 0.02;
+        const mRatio = (r - mLen) / r;
+        const mX = x * mRatio;
+        const mY = y * mRatio;
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(mX, mY);
+        if (i % 5 === 0) {
+          context.lineWidth = size * 0.008;
+          context.strokeStyle = 'red';
+        } else {
+          context.lineWidth = size * 0.004;
+          context.strokeStyle = '#ffffff';
+        }
+        context.stroke();
+        context.closePath();
+        // 绘制刻度值
+        const fontSize = size * 0.05;
+        const nRatio = (r - fontSize - mLen) / r;
+        const nX = x * nRatio;
+        const nY = y * nRatio;
+        context.font = `${fontSize}px Arial`;
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = '#ffffff';
+        if (i % 5 === 0) {
+          context.fillText(i === 0 ? 12 : i / 5, nX, nY);
+        }
+      }
+      context.restore();
+
+      // 绘制秒针
+      context.save();
+      const sRatio = 0.9;
+      const sX = Math.sin((s * 6) * Math.PI / 180) * r * sRatio;
+      const sY = -Math.cos((s * 6) * Math.PI / 180) * r * sRatio;
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.lineTo(sX, sY);
+      context.lineWidth = size * 0.006;
+      context.strokeStyle = 'red';
+      context.stroke();
+      context.closePath();
+      context.restore();
+
+      // 绘制分针
+      context.save();
+      const M = m + s / 60;
+      const mRatio = 0.85;
+      const mX = Math.sin((M * 6) * Math.PI / 180) * r * mRatio;
+      const mY = -Math.cos((M * 6) * Math.PI / 180) * r * mRatio;
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.lineTo(mX, mY);
+      context.lineWidth = size * 0.01;
+      context.strokeStyle = 'red';
+      context.stroke();
+      context.closePath();
+      context.restore();
+
+      // 绘制时针
+      context.save();
+      const H = h + M / 60;
+      const hRatio = 0.5;
+      const hX = Math.sin((H * 30) * Math.PI / 180) * r * hRatio;
+      const hY = -Math.cos((H * 30) * Math.PI / 180) * r * hRatio;
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.lineTo(hX, hY);
+      context.lineWidth = size * 0.015;
+      context.strokeStyle = 'red';
+      context.stroke();
+      context.closePath();
+      context.restore();
+
+      // 绘制圆心
+      context.save();
+      const oR = size * 0.01;
+      context.beginPath();
+      context.arc(0, 0, oR, 0, 2 * Math.PI);
+      context.fillStyle = '#ffffff';
+      context.fill();
+      context.closePath();
+      context.restore();
+    }
+    const img = new Image();
+    img.src = './bg3.png'
+    const fn = () => {
+      const date = new Date();
+      const dateParam = {
+        h: date.getHours(),
+        m: date.getMinutes(),
+        s: date.getSeconds(),
+      }
+      const options = {
+        size: 700,
+        background: img,
+      }
+      render(dateParam, options)
+      requestAnimationFrame(fn)
+    }
+    fn()
+  })();
+</script>
+</html>
